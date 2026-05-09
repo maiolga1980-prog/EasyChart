@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EasyCharts – לוח מחוונים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--gold:#f0c040;--gold2:#d4a500;--blue:#2962ff;--green:#26a69a;--red:#ef5350;--text:#e6edf3;--text2:#8b949e;--text3:#6e7681;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;}
+nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;gap:12px;flex-wrap:wrap;}
+.nav-logo{font-size:16px;font-weight:800;color:var(--gold);white-space:nowrap;}
+.nav-tabs{display:flex;gap:2px;flex-wrap:wrap;}
+.nav-tab{color:var(--text2);text-decoration:none;font-size:12px;padding:5px 11px;border-radius:6px;transition:all .15s;border:none;background:transparent;cursor:pointer;font-family:'Heebo',sans-serif;white-space:nowrap;}
+.nav-tab:hover{color:var(--text);background:var(--bg3);}
+.nav-tab.on{color:var(--text);background:var(--bg3);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#26a69a;display:inline-block;margin-left:5px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+.page{display:none;padding:16px 20px;max-width:1200px;margin:0 auto;}
+.page.on{display:block;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.g3,.g4{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr;}}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+.card-title{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;}
+.metric{background:var(--bg3);border-radius:8px;padding:12px 14px;}
+.metric-label{font-size:10px;color:var(--text3);margin-bottom:4px;}
+.metric-val{font-size:22px;font-weight:700;}
+.metric-sub{font-size:11px;color:var(--text2);margin-top:3px;}
+.pos{color:#26a69a;}.neg{color:#ef5350;}.neu{color:var(--gold);}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sh-title{font-size:15px;font-weight:700;}
+/* Fear & Greed */
+.fg-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.fg-num{font-size:48px;font-weight:800;text-align:center;}
+.fg-label{font-size:15px;font-weight:700;text-align:center;}
+.fg-bar{width:100%;height:12px;border-radius:6px;background:linear-gradient(to left,#ef5350,#f59e0b,#26a69a);margin:10px 0;position:relative;}
+.fg-pointer{position:absolute;top:-4px;width:4px;height:20px;background:#fff;border-radius:2px;transform:translateX(-50%);}
+.fg-scale{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);}
+.fg-history{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
+.fg-hist-item{text-align:center;font-size:10px;color:var(--text2);}
+.fg-hist-val{font-size:14px;font-weight:700;}
+.fg-link{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:11px;color:#7ba7ff;text-decoration:none;}
+/* Market direction */
+.mkt-score-wrap{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.mkt-score{font-size:52px;font-weight:800;}
+.mkt-score-label{font-size:16px;font-weight:700;}
+.mkt-score-desc{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.6;}
+.factor-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.factor-row:last-child{border-bottom:none;}
+.factor-icon{font-size:15px;width:22px;flex-shrink:0;}
+.factor-name{flex:1;font-size:12px;}
+.factor-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;}
+.tp-g{background:rgba(38,166,154,.12);color:#26a69a;}
+.tp-r{background:rgba(239,83,80,.12);color:#ef5350;}
+.tp-y{background:rgba(240,192,64,.12);color:#d4a500;}
+/* News */
+.news-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.ntab{height:28px;padding:0 12px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text2);font-size:12px;font-family:'Heebo',sans-serif;cursor:pointer;transition:all .15s;}
+.ntab:hover{background:var(--bg3);}
+.ntab.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+.news-list{display:flex;flex-direction:column;gap:8px;}
+.news-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s;text-decoration:none;display:block;}
+.news-item:hover{border-color:var(--text3);}
+.news-headline{font-size:13px;font-weight:500;color:var(--text);line-height:1.45;margin-bottom:5px;}
+.news-meta{font-size:11px;color:var(--text3);display:flex;gap:10px;flex-wrap:wrap;}
+.news-impact{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;margin-right:auto;}
+.ni-bull{background:rgba(38,166,154,.15);color:#26a69a;}
+.ni-bear{background:rgba(239,83,80,.15);color:#ef5350;}
+.ni-neu{background:rgba(240,192,64,.12);color:#d4a500;}
+.news-ticker{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg3);color:var(--text2);}
+.refresh-btn{background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:'Heebo',sans-serif;transition:all .15s;}
+.refresh-btn:hover{background:var(--bg3);}
+/* Indices */
+.idx-table{width:100%;border-collapse:collapse;}
+.idx-table th{font-size:10px;color:var(--text3);font-weight:500;padding:6px 10px;border-bottom:1px solid var(--border);text-align:right;}
+.idx-table td{padding:10px 10px;font-size:12px;border-bottom:1px solid var(--border);}
+.idx-table tr:last-child td{border-bottom:none;}
+.idx-table tr:hover td{background:var(--bg3);}
+.trend-pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap;}
+/* Earnings */
+.earn-table{width:100%;border-collapse:collapse;}
+.earn-table th{font-size:10px;color:var(--text3);font-weight:500;padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;}
+.earn-table td{padding:10px 10px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:top;}
+.earn-table tr:last-child td{border-bottom:none;}
+.earn-table tr:hover td{background:var(--bg3);}
+.beat-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;}
+.bb-beat{background:rgba(38,166,154,.15);color:#26a69a;}
+.bb-miss{background:rgba(239,83,80,.15);color:#ef5350;}
+.warn-banner{background:rgba(38,166,154,.1);border:1px solid rgba(38,166,154,.35);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.disc{text-align:center;font-size:10px;color:var(--text3);padding:8px 16px;border-top:1px solid var(--border);margin-top:16px;}
+/* Chat bubble */
+#chat-bubble{position:fixed;bottom:20px;right:20px;z-index:999;width:50px;height:50px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.4);transition:transform .15s;}
+#chat-bubble:hover{transform:scale(1.1);}
+#chat-tooltip{position:fixed;bottom:80px;right:20px;z-index:999;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;width:230px;font-size:12px;color:var(--text);display:none;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">📈 EasyCharts</div>
+  <div class="nav-tabs">
+    <button class="nav-tab on" onclick="showPage('dashboard',this)">📊 לוח מחוונים</button>
+    <button class="nav-tab" onclick="showPage('news',this)">📰 חדשות</button>
+    <button class="nav-tab" onclick="showPage('indices',this)">🌍 מדדים</button>
+    <button class="nav-tab" onclick="showPage('earnings',this)">💼 דוחות</button>
+    <a class="nav-tab" href="index.html">🏠 קורס</a>
+  </div>
+  <div style="font-size:10px;color:var(--text3);white-space:nowrap;"><span class="live-dot"></span>עדכון יומי</div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page on" id="page-dashboard">
+  <div class="warn-banner">
+    <div style="font-size:20px;">🚀</div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#26a69a;">SPY $737 ↑ | QQQ $711 ↑ | VIX 17.18 ↓ | BTC $80K | Fear&Greed 67 חמדנות</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">שבוע שישי ירוק ברציפות! TSLA +16.5%, BTC חזר מעל $80K. יש לנהל סיכון עם Stop Loss.</div>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-bottom:14px;">
+    <!-- Market Direction -->
+    <div class="card">
+      <div class="card-title">📡 כיוון השוק</div>
+      <div class="mkt-score-wrap">
+        <div class="mkt-score" style="color:#26a69a;">72</div>
+        <div>
+          <div class="mkt-score-label" style="color:#26a69a;">שוק חיובי — זהירות מתונה</div>
+          <div class="mkt-score-desc">Fear & Greed קפץ ל-67 חמדנות! VIX ירד ל-17. SPY $737 ו-QQQ $711 עולים חזק. BTC חזר מעל $80K. שבוע שישי ירוק ברציפות — אך יש לנהל סיכון בזהירות.</div>
+        </div>
+      </div>
+      <div id="factors-list"></div>
+    </div>
+    <!-- Fear & Greed -->
+    <div class="card">
+      <div class="card-title">🧠 Fear & Greed Index</div>
+      <div class="fg-wrap">
+        <div class="fg-num" style="color:#26a69a;">67</div>
+        <div class="fg-label" style="color:#26a69a;">חמדנות (Greed)</div>
+        <div style="width:100%;">
+          <div class="fg-bar"><div class="fg-pointer" style="right:33%;"></div></div>
+          <div class="fg-scale"><span>פחד קיצוני</span><span>פחד</span><span>ניטרלי</span><span>חמדנות</span><span>חמדנות קיצונית</span></div>
+        </div>
+        <div class="fg-history">
+          <div class="fg-hist-item"><div class="fg-hist-val" style="color:#26a69a;">71 — Greed</div><div>שבוע שעבר</div></div>
+          <div class="fg-hist-item"><div class="fg-hist-val" style="color:#ef5350;">29 — Fear</div><div>חודש שעבר</div></div>
+          <div class="fg-hist-item"><div class="fg-hist-val" style="color:#26a69a;">57 — Greed</div><div>שנה שעברה</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);text-align:center;margin-top:6px;line-height:1.6;">מעל 75 = חמדנות קיצונית (סכנה).<br/>מתחת 25 = פחד קיצוני (היסטורית — הזדמנות).</div>
+        <a class="fg-link" href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">🔗 לנתון החי ב-CNN ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 metrics -->
+  <div class="g4" style="margin-bottom:14px;">
+    <div class="metric"><div class="metric-label">S&P 500 · SPY</div><div class="metric-val">$737.62</div><div class="metric-sub pos">+6.04% היום</div></div>
+    <div class="metric"><div class="metric-label">נאסדק · QQQ</div><div class="metric-val">$711.23</div><div class="metric-sub pos">+16.29% היום</div></div>
+    <div class="metric"><div class="metric-label">ביטקוין · BTC</div><div class="metric-val">$80,212</div><div class="metric-sub pos">+19.40% היום</div></div>
+    <div class="metric"><div class="metric-label">אתריום · ETH</div><div class="metric-val">$2,310</div><div class="metric-sub pos">+3.46% היום</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="sh"><div class="sh-title">📰 חדשות היום</div><button class="refresh-btn" onclick="refreshNews()">רענן</button></div>
+      <div id="news-preview"></div>
+      <div style="margin-top:10px;"><button class="nav-tab" onclick="showPage('news',null)" style="font-size:12px;">כל החדשות ←</button></div>
+    </div>
+    <div class="card">
+      <div class="sh"><div class="sh-title">🏆 מניות בולטות</div></div>
+      <div id="movers"></div>
+    </div>
+  </div>
+  <div class="disc">⚠️ לצרכים חינוכיים בלבד — אינו מהווה ייעוץ פיננסי</div>
+</div>
+
+<!-- NEWS -->
+<div class="page" id="page-news">
+  <div class="sh">
+    <div><div style="font-size:20px;font-weight:800;margin-bottom:4px;">📰 חדשות שוק ההון</div>
+    <div style="font-size:12px;color:var(--text2);">כותרות רלוונטיות עם ניתוח השפעה</div></div>
+    <button class="refresh-btn" onclick="refreshNews()">⟳ רענן</button>
+  </div>
+  <div class="news-tabs">
+    <button class="ntab on" onclick="filterNews('all',this)">הכל</button>
+    <button class="ntab" onclick="filterNews('macro',this)">מקרו</button>
+    <button class="ntab" onclick="filterNews('tech',this)">טכנולוגיה</button>
+    <button class="ntab" onclick="filterNews('crypto',this)">קריפטו</button>
+  </div>
+  <div id="news-loading" style="display:none;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:8px;">
+    <div style="width:14px;height:14px;border:2px solid var(--bg3);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;"></div>
+    טוען חדשות...
+  </div>
+  <div class="news-list" id="news-full"></div>
+  <div class="disc">⚠️ לצרכים חינוכיים בלבד</div>
+</div>
+
+<!-- INDICES -->
+<div class="page" id="page-indices">
+  <div class="warn-banner">
+    <div style="font-size:20px;">🚀</div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#26a69a;">SPY $737 ↑ | QQQ $711 ↑ | VIX 17.18 ↓ | שבוע שישי ירוק!</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">עלייה חזקה השבוע. יש לבדוק אם המדדים חזרו מעל MA150/200. לנהל סיכון עם Stop Loss.</div>
+    </div>
+  </div>
+  <div style="font-size:20px;font-weight:800;margin-bottom:16px;">🌍 ניתוח מדדים עיקריים</div>
+  <div class="g2" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">🇺🇸 ארה"ב</div>
+      <table class="idx-table" id="us-table"></table>
+    </div>
+    <div class="card">
+      <div class="card-title">🌍 עולמי</div>
+      <table class="idx-table" id="world-table"></table>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title">🔶 קריפטו</div>
+    <table class="idx-table" id="crypto-table"></table>
+  </div>
+  <!-- Fibonacci -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title">📐 ניתוח פיבונאצי — SPY</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">רמות תמיכה ותנגדות טבעיות. כשמחיר יורד, הן מסמנות היכן הוא עשוי לעצור.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(239,83,80,.1);border-radius:8px;border-right:3px solid #ef5350;">
+        <div style="font-weight:700;color:#ef5350;width:60px;">0.0</div><div style="font-weight:700;">$634.00</div><div style="font-size:12px;color:var(--text2);">שיא — נקודת התחלה</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(240,192,64,.12);border-radius:8px;border-right:3px solid #f59e0b;">
+        <div style="font-weight:700;color:#f59e0b;width:60px;">0.236</div><div style="font-weight:700;">$579.74</div><div style="font-size:12px;color:var(--text2);">תמיכה ראשונה</div>
+        <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(240,192,64,.2);color:#d4a500;margin-right:auto;">📍 אזור נוכחי</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:8px;border-right:3px solid var(--border);">
+        <div style="font-weight:700;color:var(--text2);width:60px;">0.382</div><div style="font-weight:700;">$546.17</div><div style="font-size:12px;color:var(--text2);">תמיכה שנייה</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:8px;border-right:3px solid var(--border);">
+        <div style="font-weight:700;color:var(--text2);width:60px;">0.5</div><div style="font-weight:700;">$519.04</div><div style="font-size:12px;color:var(--text2);">תמיכה חזקה</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📖 איך לקרוא את הטבלה?</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+      <b style="color:var(--text);">מעל MA200</b> — מגמה ארוכת טווח חיובית.<br/>
+      <b style="color:var(--text);">מול MA20</b> — קרוב = תיקון. רחוק = מגמה ישירה.<br/>
+      <b style="color:var(--text);">VIX</b> — מדד הפחד. מעל 30 = פחד גבוה. מתחת 20 = רגיעה.
+    </div>
+  </div>
+  <div class="disc">⚠️ לצרכים חינוכיים בלבד</div>
+</div>
+
+<!-- EARNINGS -->
+<div class="page" id="page-earnings">
+  <div style="font-size:20px;font-weight:800;margin-bottom:4px;">💼 דוחות כספיים</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">האם המניה הכתה תחזיות? מה צופים לרבעון הבא?</div>
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title">📖 מושגי יסוד</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;"><div style="font-size:13px;font-weight:700;margin-bottom:4px;">📌 EPS</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">רווח למניה. ככל שגבוה יותר — טוב יותר.</div></div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;"><div style="font-size:13px;font-weight:700;margin-bottom:4px;">📌 Beat / Miss</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">Beat = הרוויחו יותר מהתחזית. Miss = פחות.</div></div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;"><div style="font-size:13px;font-weight:700;margin-bottom:4px;">📌 Revenue</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">סך המכירות. חשוב לבדוק גם EPS וגם Revenue.</div></div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;"><div style="font-size:13px;font-weight:700;margin-bottom:4px;">📌 Guidance</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">תחזית החברה לרבעון הבא. לפעמים חשוב יותר מהדוח.</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 דוחות אחרונים</div>
+    <div style="overflow-x:auto;">
+      <table class="earn-table" id="earn-table">
+        <thead><tr><th>מניה</th><th>EPS בפועל</th><th>תחזית</th><th>הפתעה</th><th>Beat/Miss</th><th>דוח הבא</th><th>גייד</th></tr></thead>
+        <tbody id="earn-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="disc">⚠️ לצרכים חינוכיים בלבד</div>
+</div>
+
+<!-- Chat bubble -->
+<div id="chat-bubble" onclick="toggleChat()">💬</div>
+<div id="chat-tooltip">
+  <div style="font-weight:700;color:var(--gold);margin-bottom:6px;">שאל/י שאלה 💬</div>
+  <div style="color:var(--text2);font-size:11px;">כתוב/י שאלה ונחזור אלייך בהקדם</div>
+  <div style="margin-top:8px;display:flex;gap:6px;">
+    <input id="chat-inp" type="text" placeholder="השאלה שלך..." style="flex:1;height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:11px;color:var(--text);font-family:'Heebo',sans-serif;outline:none;direction:rtl;"/>
+    <button onclick="sendChat()" style="height:28px;padding:0 10px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;">שלח</button>
+  </div>
+  <div style="margin-top:6px;font-size:10px;color:var(--text3);">או פנה/י ישירות: <a href="https://wa.me/972528028352" target="_blank" style="color:#26a69a;">WhatsApp ↗</a></div>
+</div>
+
+<script>
+/* ── NAVIGATION ── */
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.remove('on'); });
+  document.getElementById('page-'+id).classList.add('on');
+  if(btn) btn.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── FACTORS ── */
+var factors = [
+  {icon:'📊',name:'S&P 500 עולה חזק',status:'חיובי',cls:'tp-g'},
+  {icon:'💻',name:'נאסדק +16% השבוע',status:'חיובי',cls:'tp-g'},
+  {icon:'📉',name:'ווליום — לבדוק',status:'זהירות',cls:'tp-y'},
+  {icon:'💣',name:'גיאופוליטי — הסכם?',status:'מתמתן',cls:'tp-y'},
+  {icon:'😨',name:'VIX 17.18 ירד חזק',status:'רגיעה',cls:'tp-g'},
+  {icon:'📰',name:'Fear&Greed 67 — Greed',status:'חמדנות',cls:'tp-y'},
+  {icon:'🔶',name:'BTC חזר מעל $80K',status:'מתאושש',cls:'tp-y'},
+  {icon:'🌍',name:'שבוע שישי ירוק',status:'חיובי',cls:'tp-g'},
+];
+var fl = document.getElementById('factors-list');
+var fhtml = '';
+factors.forEach(function(f){
+  fhtml += '<div class="factor-row"><div class="factor-icon">'+f.icon+'</div><div class="factor-name">'+f.name+'</div><span class="factor-status '+f.cls+'">'+f.status+'</span></div>';
+});
+fl.innerHTML = fhtml;
+
+/* ── MOVERS ── */
+var movers = [
+  {name:'TSLA',chg:'+16.56%',pos:true,reason:'עלייה חדה'},
+  {name:'QQQ',chg:'+16.29%',pos:true,reason:'נאסדק חזק מאוד'},
+  {name:'ALAB',chg:'+4.14%',pos:true,reason:'עלייה יפה'},
+  {name:'BTC',chg:'+19.40%',pos:true,reason:'חזר מעל $80K'},
+  {name:'MP',chg:'-1.70%',pos:false,reason:'ירידה קלה'},
+  {name:'ONDS',chg:'+0.17%',pos:true,reason:'יציב'},
+];
+var mv = document.getElementById('movers');
+var mhtml = '';
+movers.forEach(function(m){
+  mhtml += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">'
+    +'<div style="font-weight:700;width:52px;">'+m.name+'</div>'
+    +'<div style="font-weight:700;width:52px;color:'+(m.pos?'#26a69a':'#ef5350')+';">'+m.chg+'</div>'
+    +'<div style="font-size:11px;color:var(--text2);">'+m.reason+'</div></div>';
+});
+mv.innerHTML = mhtml;
+
+/* ── NEWS ── */
+var newsData = [];
+var activeFilter = 'all';
+
+function getFallbackNews(){
+  return [
+    {cat:'גיאופוליטי',catColor:'#ef5350',headline:'מלחמה ארהב-עירן — KTOS וחברות ביטחון עולות. שווקים בלחץ.',time:'עדכון אחרון',source:'Reuters',impact:'bear',impactTxt:'דובי',tickers:['KTOS','SPY'],cat_id:'macro',link:'#'},
+    {cat:'מקרו',catColor:'#f59e0b',headline:'VIX עלה ל-26.3 — הפחד מתגבר. SPY $654 ו-QQQ $583 יורדים.',time:'עדכון אחרון',source:'CNBC',impact:'bear',impactTxt:'דובי',tickers:['VIX','SPY'],cat_id:'macro',link:'#'},
+    {cat:'קריפטו',catColor:'#f59e0b',headline:'BTC $68,337 ו-ETH $2,078 — שניהם עמוק מתחת MA150 ו-MA200.',time:'עדכון אחרון',source:'CoinDesk',impact:'bear',impactTxt:'דובי',tickers:['BTC','ETH'],cat_id:'crypto',link:'#'},
+    {cat:'מקרו',catColor:'#7ba7ff',headline:'Fear & Greed = 23 — פחד קיצוני. מדדים מתחת MA200. לפי השיטה: ממתינים.',time:'עדכון אחרון',source:'CNN',impact:'bear',impactTxt:'דובי',tickers:['SPY'],cat_id:'macro',link:'#'},
+    {cat:'מקרו',catColor:'#7ba7ff',headline:'ווליום יורד בימי עלייה — אנליסטים: עלייה חלשה ללא תמיכת קונים.',time:'עדכון אחרון',source:'MarketWatch',impact:'bear',impactTxt:'דובי',tickers:['SPY','QQQ'],cat_id:'macro',link:'#'},
+  ];
+}
+
+var CORS = 'https://api.allorigins.win/get?url=';
+var RSS = [
+  'https://feeds.finance.yahoo.com/rss/2.0/headline?s=SPY,QQQ,BTC-USD&region=US&lang=en-US',
+  'https://feeds.finance.yahoo.com/rss/2.0/headline?s=AAPL,NVDA,TSLA&region=US&lang=en-US',
+];
+
+function timeAgo(d){
+  var diff = Math.floor((Date.now()-d)/60000);
+  if(isNaN(diff)||diff<0) return 'עכשיו';
+  if(diff<60) return 'לפני '+diff+' דקות';
+  if(diff<1440) return 'לפני '+Math.floor(diff/60)+' שעות';
+  return 'לפני '+Math.floor(diff/1440)+' ימים';
+}
+
+function fetchFeed(url){
+  return fetch(CORS+encodeURIComponent(url))
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var parser = new DOMParser();
+      var xml = parser.parseFromString(d.contents,'text/xml');
+      var items = xml.querySelectorAll('item');
+      var result = [];
+      items.forEach(function(item,idx){
+        if(idx>=6) return;
+        var title = item.querySelector('title') ? item.querySelector('title').textContent : '';
+        var pubDate = item.querySelector('pubDate') ? item.querySelector('pubDate').textContent : '';
+        var link = item.querySelector('link') ? item.querySelector('link').textContent : '#';
+        if(title) result.push({cat:'שוק',catColor:'#7ba7ff',headline:title,time:timeAgo(new Date(pubDate)),source:'Yahoo Finance',impact:'neu',impactTxt:'עדכון',tickers:[],cat_id:'macro',link:link});
+      });
+      return result;
+    }).catch(function(){ return []; });
+}
+
+function loadNews(){
+  document.getElementById('news-loading').style.display='flex';
+  Promise.all(RSS.map(fetchFeed)).then(function(results){
+    var all = [];
+    results.forEach(function(r){ r.forEach(function(item){ all.push(item); }); });
+    newsData = all.length > 0 ? all : getFallbackNews();
+    document.getElementById('news-loading').style.display='none';
+    renderNewsPreview();
+    renderNewsFull();
+  }).catch(function(){
+    newsData = getFallbackNews();
+    document.getElementById('news-loading').style.display='none';
+    renderNewsPreview();
+    renderNewsFull();
+  });
+}
+
+function newsItemHTML(n){
+  var impCls = n.impact==='bull'?'ni-bull':n.impact==='bear'?'ni-bear':'ni-neu';
+  var href = n.link && n.link!=='#' ? n.link : '#';
+  var target = href!=='#' ? 'target="_blank" rel="noopener"' : 'onclick="return false;"';
+  var tickersHTML = n.tickers.map(function(t){ return '<span class="news-ticker">'+t+'</span>'; }).join('');
+  return '<a class="news-item" href="'+href+'" '+target+'>'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">'
+    +'<span style="font-size:10px;font-weight:700;color:'+n.catColor+';">'+n.cat+'</span>'
+    +tickersHTML
+    +'<span class="news-impact '+impCls+'" style="margin-right:auto;">'+n.impactTxt+'</span>'
+    +(href!=='#'?'<span style="font-size:10px;color:var(--text3);">↗</span>':'')
+    +'</div>'
+    +'<div class="news-headline">'+n.headline+'</div>'
+    +'<div class="news-meta"><span>'+n.source+'</span><span>'+n.time+'</span></div>'
+    +'</a>';
+}
+
+function renderNewsPreview(){
+  var el = document.getElementById('news-preview');
+  if(el) el.innerHTML = newsData.slice(0,4).map(newsItemHTML).join('');
+}
+function renderNewsFull(){
+  var filtered = activeFilter==='all' ? newsData : newsData.filter(function(n){ return n.cat_id===activeFilter; });
+  var el = document.getElementById('news-full');
+  if(el) el.innerHTML = filtered.map(newsItemHTML).join('');
+}
+function filterNews(f, btn){
+  activeFilter = f;
+  document.querySelectorAll('.ntab').forEach(function(t){ t.classList.remove('on'); });
+  if(btn) btn.classList.add('on');
+  renderNewsFull();
+}
+function refreshNews(){
+  ['news-full','news-preview'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.opacity='0.5';
+  });
+  loadNews();
+  setTimeout(function(){
+    ['news-full','news-preview'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.style.opacity='1';
+    });
+  },2000);
+}
+
+/* ── INDICES ── */
+var usIdx = [
+  {name:'S&P 500',ticker:'SPY',val:'$737.62',chg:'+6.04%',ma200:'מעל?',ma150:'בבדיקה',ma20:'מעל',trend:'עלייה חזקה',tcls:'tp-g',pos:true},
+  {name:'נאסדק 100',ticker:'QQQ',val:'$711.23',chg:'+16.29%',ma200:'מעל?',ma150:'בבדיקה',ma20:'מעל',trend:'עלייה חזקה',tcls:'tp-g',pos:true},
+  {name:'דאו גונס',ticker:'DIA',val:'$398.50',chg:'+0.3%',ma200:'מתחת',ma150:'מתחת',ma20:'רחוק',trend:'מגמה יורדת',tcls:'tp-r',pos:true},
+  {name:'ראסל 2000',ticker:'IWM',val:'$198.30',chg:'-0.8%',ma200:'מתחת',ma150:'מתחת',ma20:'רחוק',trend:'מגמה יורדת',tcls:'tp-r',pos:false},
+  {name:'VIX (פחד)',ticker:'VIX',val:'17.18',chg:'-2.71%',ma200:'מתחת',ma150:'מתחת',ma20:'יורד',trend:'רגיעה',tcls:'tp-g',pos:false},
+];
+var worldIdx = [
+  {name:'FTSE 100 לונדון',ticker:'UKX',val:'8,312',chg:'+0.4%',ma200:'מתחת',ma150:'מתחת',ma20:'רחוק',trend:'מגמה יורדת',tcls:'tp-r',pos:true},
+  {name:'DAX גרמניה',ticker:'DAX',val:'18,891',chg:'+0.7%',ma200:'מתחת',ma150:'מתחת',ma20:'קרוב',trend:'מגמה יורדת',tcls:'tp-r',pos:true},
+  {name:'Nikkei יפן',ticker:'NKY',val:'38,504',chg:'-0.3%',ma200:'מתחת',ma150:'מתחת',ma20:'רחוק',trend:'מגמה יורדת',tcls:'tp-r',pos:false},
+  {name:'תל אביב 125',ticker:'TA125',val:'2,187',chg:'+1.1%',ma200:'מתחת',ma150:'מתחת',ma20:'קרוב',trend:'מגמה יורדת',tcls:'tp-r',pos:true},
+  {name:'נפט גולמי',ticker:'OIL',val:'$62.4',chg:'-5.2%',ma200:'מתחת',ma150:'מתחת',ma20:'רחוק',trend:'מגמה יורדת',tcls:'tp-r',pos:false},
+];
+var cryptoIdx = [
+  {name:'ביטקוין',ticker:'BTC/USD',val:'$80,212',chg:'+19.40%',ma200:'מתחת ($94,755)',ma150:'מתחת ($88,238)',ma20:'מעל',trend:'התאוששות',tcls:'tp-y',pos:true},
+  {name:'אתריום',ticker:'ETH/USD',val:'$2,310',chg:'+3.46%',ma200:'מתחת ($2,969)',ma150:'מתחת',ma20:'מעל',trend:'מתאושש',tcls:'tp-y',pos:true},
+  {name:'Solana',ticker:'SOL/USD',val:'~$130',chg:'-2.1%',ma200:'מתחת',ma150:'מתחת',ma20:'רחוק',trend:'מגמה יורדת',tcls:'tp-r',pos:false},
+];
+
+function idxHead(){
+  return '<thead><tr><th>מדד</th><th>ערך</th><th>שינוי</th><th>מול MA200</th><th>מול MA150</th><th>מגמה</th></tr></thead>';
+}
+function idxRow(d){
+  var ma200cls = d.ma200.indexOf('מעל')>=0?'tp-g':'tp-r';
+  var ma150cls = d.ma150.indexOf('מעל')>=0?'tp-g':'tp-r';
+  return '<tr>'
+    +'<td><div style="font-weight:500;">'+d.name+'</div><div style="font-size:10px;color:var(--text3);">'+d.ticker+'</div></td>'
+    +'<td style="font-weight:500;">'+d.val+'</td>'
+    +'<td style="color:'+(d.pos?'#26a69a':'#ef5350')+';">'+d.chg+'</td>'
+    +'<td><span class="trend-pill '+ma200cls+'">'+d.ma200+'</span></td>'
+    +'<td><span class="trend-pill '+ma150cls+'">'+d.ma150+'</span></td>'
+    +'<td><span class="trend-pill '+d.tcls+'">'+d.trend+'</span></td>'
+    +'</tr>';
+}
+document.getElementById('us-table').innerHTML = idxHead()+'<tbody>'+usIdx.map(idxRow).join('')+'</tbody>';
+document.getElementById('world-table').innerHTML = idxHead()+'<tbody>'+worldIdx.map(idxRow).join('')+'</tbody>';
+document.getElementById('crypto-table').innerHTML = idxHead()+'<tbody>'+cryptoIdx.map(idxRow).join('')+'</tbody>';
+
+/* ── EARNINGS ── */
+var earnings = [
+  {name:'NVDA',eps:5.98,est:5.16,beat:'beat',surprise:'+15.9%',next:'אוג 2025',guidance:'חיובי מאוד'},
+  {name:'AAPL',eps:1.53,est:1.50,beat:'beat',surprise:'+2.0%',next:'יול 2025',guidance:'יציב'},
+  {name:'MSFT',eps:2.94,est:2.83,beat:'beat',surprise:'+3.9%',next:'אוק 2025',guidance:'חיובי'},
+  {name:'META',eps:4.71,est:4.32,beat:'beat',surprise:'+9.0%',next:'יול 2025',guidance:'חיובי'},
+  {name:'TSLA',eps:0.45,est:0.51,beat:'miss',surprise:'-11.8%',next:'יול 2025',guidance:'שלילי'},
+  {name:'GOOGL',eps:1.89,est:1.51,beat:'beat',surprise:'+25.2%',next:'יול 2025',guidance:'חיובי'},
+  {name:'AMZN',eps:0.98,est:0.84,beat:'beat',surprise:'+16.7%',next:'אוג 2025',guidance:'חיובי'},
+];
+var eb = document.getElementById('earn-body');
+var ehtml = '';
+earnings.forEach(function(e){
+  var bc = e.beat==='beat'?'bb-beat':'bb-miss';
+  var bt = e.beat==='beat'?'Beat ✅':'Miss ❌';
+  var sc = e.beat==='beat'?'#26a69a':'#ef5350';
+  ehtml += '<tr>'
+    +'<td><div style="font-weight:700;">'+e.name+'</div></td>'
+    +'<td style="font-weight:700;">$'+e.eps+'</td>'
+    +'<td style="color:var(--text2);">$'+e.est+'</td>'
+    +'<td style="color:'+sc+';font-weight:700;">'+e.surprise+'</td>'
+    +'<td><span class="beat-badge '+bc+'">'+bt+'</span></td>'
+    +'<td style="font-size:11px;color:var(--text2);">'+e.next+'</td>'
+    +'<td style="font-size:11px;color:var(--text2);">'+e.guidance+'</td>'
+    +'</tr>';
+});
+eb.innerHTML = ehtml;
+
+/* ── CHAT ── */
+var chatOpen = false;
+function toggleChat(){
+  chatOpen = !chatOpen;
+  document.getElementById('chat-tooltip').style.display = chatOpen ? 'block' : 'none';
+  if(chatOpen) setTimeout(function(){ document.getElementById('chat-inp').focus(); },100);
+}
+function sendChat(){
+  var msg = document.getElementById('chat-inp').value.trim();
+  if(!msg) return;
+  window.open('mailto:finolga10@gmail.com?subject='+encodeURIComponent('שאלה מ-EasyCharts')+'&body='+encodeURIComponent(msg));
+  document.getElementById('chat-tooltip').innerHTML = '<div style="color:#26a69a;font-weight:700;padding:8px 0;">✅ תודה! ניצור קשר בהקדם</div>';
+  setTimeout(function(){ chatOpen=false; document.getElementById('chat-tooltip').style.display='none'; },2000);
+}
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&chatOpen) toggleChat(); });
+
+/* ── INIT ── */
+loadNews();
+</script>
+</body>
+</html>
